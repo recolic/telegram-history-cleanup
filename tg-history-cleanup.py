@@ -1,7 +1,7 @@
 #!/usr/bin/python3 -u
 
 # This script will automatically delete your history message in all joined groups.
-# It will check the latest `n` messages of each joined group, and delete the message if:
+# It will check the latest messages (until `n` seconds ago) of each joined group, and delete the message if:
 #    1. It was sent from you
 #    2. The group is not whitelisted in (WHITELIST_CHATS)
 #    3. The group was sent at least `t` seconds ago
@@ -15,7 +15,7 @@ TELEGRAM_API_HASH = '67e72cc9e2b603e08d05446ad5ef8e6'
 TELEGRAM_PHONE = '+12223334444' # Phone number in International Format. Example: '+8617719890604'
 WHITELIST_CHATS = ['-692222222', '-100195111111111']
 
-MSG_DOWNLOAD_LIMIT = 10000 # Set to '0' for dry-run, set to a huge number for first-run.
+MSG_DOWNLOAD_TIME_LIMIT = 4*24*60*60 # 4 days ago. Set to '0' for dry-run, set to a huge number for first-run.
 MSG_ALIVE_TIME = 24*60*60 # 1 day
 ##################### Configuration End ########################
 
@@ -34,7 +34,7 @@ def result_of(async_result):
     async_result.wait()
     return async_result.update
 
-def delete_all_msg_from_me(telegram, group_id, receive_limit, my_userid):
+def delete_all_msg_from_me(telegram, group_id, pull_time_limit, my_userid):
     receive = True
     from_message_id = 0
     stats_data = {}
@@ -51,11 +51,14 @@ def delete_all_msg_from_me(telegram, group_id, receive_limit, my_userid):
 
         msg_to_delete = []
         for message in response.update['messages']:
+            if message['date'] < current_timestamp - pull_time_limit:
+                receive = False
+                break
             if message['sender_id']['@type'] != 'messageSenderUser':
                 # Not sent from user. Ignore it.
                 from_message_id = message['id']
                 continue
-            if message['sender_id']['user_id'] == my_userid and message['date'] < current_timestamp - 24*60*60:
+            if message['sender_id']['user_id'] == my_userid and message['date'] < current_timestamp - MSG_ALIVE_TIME:
                 msg_to_delete.append(message['id'])
             else:
                 from_message_id = message['id']
@@ -64,11 +67,11 @@ def delete_all_msg_from_me(telegram, group_id, receive_limit, my_userid):
             print("DEBUG: delete msg count=", len(msg_to_delete))
             tg.delete_messages(group_id, msg_to_delete)
 
-        processed_msg_count += len(response.update['messages'])
-        if processed_msg_count > receive_limit or not response.update['total_count']:
+        if not response.update['total_count']:
             receive = False
 
-        print(f'[{processed_msg_count}/{receive_limit}] processed')
+        processed_msg_count += len(response.update['messages'])
+        print(f'[{processed_msg_count}] processed')
 
 
 if __name__ == '__main__':
@@ -85,7 +88,7 @@ if __name__ == '__main__':
             continue
         group_title = result_of(tg.get_chat(chatid))['title']
         print("Will cleaning up chat_id ", chatid, group_title)
-        delete_all_msg_from_me(tg, str(chatid), MSG_DOWNLOAD_LIMIT, my_id)
+        delete_all_msg_from_me(tg, str(chatid), MSG_DOWNLOAD_TIME_LIMIT, my_id)
 
     tg.stop()
 
