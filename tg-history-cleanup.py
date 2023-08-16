@@ -51,15 +51,12 @@ def delete_all_msg_from_me(telegram, group_id, receive_limit, my_userid):
 
         msg_to_delete = []
         for message in response.update['messages']:
-            #if message['content']['@type'] == 'messageText':
-            #    print(message['content']['text']['text'])
             if message['sender_id']['@type'] != 'messageSenderUser':
                 # Not sent from user. Ignore it.
                 from_message_id = message['id']
                 continue
             if message['sender_id']['user_id'] == my_userid and message['date'] < current_timestamp - 24*60*60:
                 msg_to_delete.append(message['id'])
-                print("DEBUG: MY message ", message)
             else:
                 from_message_id = message['id']
 
