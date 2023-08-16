@@ -30,3 +30,7 @@ The configuration options might be different but you should be able to figure it
 
 具体配置项目可能有所不同, 但你应该足够聪明可以理解.
 
+## TODO
+
+Use timestamp instead of `MSG_DOWNLOAD_LIMIT` as terminal condition
+
