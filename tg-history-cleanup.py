@@ -15,7 +15,7 @@ TELEGRAM_API_HASH = '67e72cc9e2b603e08d05446ad5ef8e6'
 TELEGRAM_PHONE = '+12223334444' # Phone number in International Format. Example: '+8617719890604'
 WHITELIST_CHATS = ['-692222222', '-100195111111111']
 
-MSG_DOWNLOAD_TIME_LIMIT = 4*24*60*60 # 4 days ago. Set to '0' for dry-run, set to a huge number for first-run.
+MSG_DOWNLOAD_TIME_LIMIT = 3*24*60*60 # 3 days ago. Set to '0' for dry-run, set to a huge number for first-run.
 MSG_ALIVE_TIME = 24*60*60 # 1 day
 ##################### Configuration End ########################
 
